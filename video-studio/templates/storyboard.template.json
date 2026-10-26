@@ -1,0 +1,121 @@
+{
+  "schema": "flow-video/1",
+  "project": "",
+  "flow_project_folder": "",
+  "format": { "aspect_ratio": "9:16", "final_resolution": "1080x1920" },
+
+  "brief": {
+    "product": "", "goal": "", "audience": "", "target_length_seconds": 0,
+    "reference_files": [], "requirements": [], "open_questions": []
+  },
+
+  "budget": { "credit_cap_total": 0, "credits_spent": 0, "ledger": [] },
+
+  "approvals": {
+    "storyboard": { "status": "pending", "approved_at": null, "note": "" },
+    "keyframes":  { "status": "pending", "approved_at": null, "note": "" },
+    "voice":      { "status": "pending", "approved_at": null, "note": "" }
+  },
+
+  "default_video_model": "Omni 1.1 Flash",
+
+  "model_profiles": {
+    "Omni 1.1 Flash": {
+      "durations_seconds": [4, 6, 8, 10],
+      "resolutions": ["360p", "720p"],
+      "default_resolution": "720p",
+      "credits": {
+        "360p": { "4": 4, "6": 5, "8": 6, "10": 7 },
+        "720p": { "4": 7, "6": 10, "8": 12, "10": 15 }
+      },
+      "credits_source": "ESTIMATE from flow-mcp CLAUDE.md notes (not a live price). flow-mcp checks Flow's live price against max_credits before spending.",
+      "prices_approved_by_user": false,
+      "prices_approved_at": null,
+      "verified": {
+        "label_in_menu": "notes 2026-09-19 (not re-checked)",
+        "start_frame": "paid test 2026-10-09 (4 s 360p), per flow-mcp notes",
+        "end_frame": "UNVERIFIED",
+        "reference_images": "UNVERIFIED (not used: frames mode)",
+        "speech_and_lip_motion": "UNVERIFIED",
+        "aspect_9_16": "UNVERIFIED for Omni",
+        "upscaled_1080p_download": "UNVERIFIED for Omni"
+      }
+    }
+  },
+
+  "continuity": {
+    "character": {
+      "id": "", "lock_text": "", "clothing": "",
+      "portrait_file": null, "flow_character_name": null,
+      "must_not_change": []
+    },
+    "product": { "lock_text": "", "reference_images": [], "must_not_change": [] },
+    "environment": { "lock_text": "", "props_and_positions": "" },
+    "camera": "", "lighting": "", "negative": ""
+  },
+
+  "voice": {
+    "engine": "gemini", "voice": "", "model_note": "",
+    "style_prompt": "", "per_line_style": {},
+    "limits_checked": { "per_minute": null, "per_day": null, "checked_at": null }
+  },
+
+  "keyframes": [
+    {
+      "id": "K0", "role": "master", "derived_from": null,
+      "prompt": "", "reference_images": [],
+      "file": null, "status": "pending", "feedback": ""
+    },
+    {
+      "id": "K1", "role": "end of S01", "derived_from": "K0",
+      "prompt": "", "reference_images": [],
+      "file": null, "status": "pending", "feedback": ""
+    }
+  ],
+
+  "scenes": [
+    {
+      "id": "S01", "order": 1, "beat": "",
+      "shot_type": "", "join_previous": "match",
+      "dialogue": "", "dialogue_target_seconds": [0, 0],
+      "tts_file": null, "tts_seconds": null, "tts_status": "pending",
+      "start_keyframe": "K0", "end_keyframe": "K1",
+      "action": "", "prompt": "",
+      "video": {
+        "model": "Omni 1.1 Flash",
+        "aspect_ratio": "9:16",
+        "duration_seconds": null,
+        "resolution": "720p",
+        "expected_credits": null,
+        "max_credits": null,
+        "variants": 1,
+        "retries": 0
+      },
+      "generation": {
+        "status": "not_started", "card_shown_at": null, "approved_at": null,
+        "job_id": null, "clip_file": null, "credits_charged": null
+      },
+      "review": { "status": "pending", "pack": null, "notes": "" },
+      "attempts": []
+    }
+  ],
+
+  "assembly": {
+    "tool": "tella", "tella_video_id": null, "clip_order": [],
+    "music": null, "status": "pending", "notes": ""
+  },
+
+  "_status_values": {
+    "approvals/*": "pending | approved",
+    "keyframes[].status": "pending | generated | approved | rejected",
+    "scenes[].tts_status": "pending | recorded | approved | rejected",
+    "scenes[].generation.status": "not_started | card_shown | approved_to_submit | submitted | downloaded | failed",
+    "scenes[].review.status": "pending | approved | revise | rejected",
+    "scenes[].shot_type": "talking (face on camera speaking the line: lip-sync risk) | cutaway (product, hands, angles; voice over picture). Required; left empty on purpose so it is chosen per shot.",
+    "scenes[].join_previous": "match (default: starts on the previous scene's end keyframe) | cut (an intended hard cut; the checker warns instead of failing)",
+    "model_profiles[].prices_approved_by_user": "false until the user approves this price table; the checker refuses every approval card while it is false. Set prices_approved_at when approving.",
+    "rule_one_at_a_time": "At most one scene may be 'submitted'. A scene's card can be shown only when every earlier scene's review.status is decided.",
+    "rule_video_block": "Before a card is shown: video.model is named explicitly; duration_seconds and resolution are allowed by that model's profile; expected_credits comes from the profile table; max_credits equals expected_credits; variants 1; retries 0.",
+    "rule_no_fallback": "Never change video.model, drop a keyframe, or raise max_credits without the user's explicit approval of that change."
+  }
+}

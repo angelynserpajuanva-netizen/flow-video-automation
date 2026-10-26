@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <!-- HyperFrames outro: 5 seconds. Edit the text / colors below, then: npm run render:outro -->
+  <style>
+    :root { --bg: #0e0f13; --accent: #ff5a36; --text: #f5f3ee; }
+    html, body { margin: 0; background: var(--bg); }
+    #outro { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: var(--bg);
+             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; color: var(--text); text-align: center; }
+    #thanks { position: absolute; left: 0; right: 0; top: 380px; margin: 0; font-size: 110px; font-weight: 800; letter-spacing: -2px; }
+    #cta { position: absolute; left: 50%; top: 560px; transform: translateX(-50%); margin: 0; padding: 22px 56px;
+           border-radius: 999px; background: var(--accent); font-size: 44px; font-weight: 700; }
+    #handle { position: absolute; left: 0; right: 0; top: 700px; margin: 0; font-size: 36px; opacity: .7; }
+  </style>
+</head>
+<body>
+  <div id="outro" data-composition-id="outro" data-start="0" data-duration="5" data-width="1920" data-height="1080">
+    <h1 id="thanks" class="clip" data-start="0" data-duration="5" data-track-index="1">Thanks for watching</h1>
+    <p id="cta" class="clip" data-start="0.6" data-duration="4.4" data-track-index="2">Subscribe for more</p>
+    <p id="handle" class="clip" data-start="1" data-duration="4" data-track-index="3">@yourhandle</p>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      tl.from("#thanks", { y: 40, opacity: 0, duration: 0.7, ease: "power3.out" }, 0)
+        .from("#cta", { scale: 0.6, opacity: 0, duration: 0.6, ease: "back.out(2)" }, 0.6)
+        .from("#handle", { opacity: 0, duration: 0.6 }, 1)
+        .to(["#thanks", "#cta", "#handle"], { opacity: 0, duration: 0.5 }, 4.5);
+      window.__timelines = window.__timelines || {};
+      window.__timelines.outro = tl;
+    </script>
+  </div>
+</body>
+</html>

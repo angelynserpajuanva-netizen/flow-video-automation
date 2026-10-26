@@ -1,0 +1,89 @@
+diff --git a/src/flow.ts b/src/flow.ts
+index 799fb63..dfd4ff0 100644
+--- a/src/flow.ts
++++ b/src/flow.ts
+@@ -58,6 +58,20 @@ async function clearBackdrops(page: Page): Promise<void> {
+     await showing.last().click({ force: true, timeout: 4000 }).catch(() => {});
+     await pause(page, 500);
+   }
++  // Flow's mobile press-and-hold menu (seen 2026-10-26, after a right-click on a tile) brings its own ".backdrop",
++  // not a cdk overlay, and Escape leaves it open: every later click - download, rename, the next job's Settings
++  // trigger - then timed out behind it until someone closed it by hand. A click in the backdrop's corner (its centre
++  // can sit under the menu sheet) closes it; if it is still there after that, it is taken off the page, since
++  // nothing the tool does ever needs that menu.
++  const pressMenu = page.locator("flow-mobile-long-press-menu .backdrop");
++  for (let i = 0; i < 3 && (await pressMenu.count().catch(() => 0)); i++) {
++    await pressMenu.first().click({ force: true, position: { x: 4, y: 4 }, timeout: 4000 }).catch(() => {});
++    await pause(page, 500);
++  }
++  if (await pressMenu.count().catch(() => 0)) {
++    await page.evaluate(() => document.querySelectorAll("flow-mobile-long-press-menu").forEach((m) => m.remove())).catch(() => {});
++    await pause(page, 300);
++  }
+ }
+ 
+ // The agent's own image model, set to the newest Nano Banana like single images. Best effort: a batch never fails over it.
+@@ -565,6 +579,7 @@ async function waitForDownloadedFile(page: Page, before: Set<string>, timeoutMs:
+ 
+ // Flow reveals a tile's controls on a genuine pointer move, so the mouse is driven to the tile itself.
+ async function hoverTile(page: Page, tile: Locator): Promise<void> {
++  await clearBackdrops(page);
+   await tile.scrollIntoViewIfNeeded();
+   const box = await tile.boundingBox();
+   if (box) {
+@@ -637,6 +652,7 @@ async function renameTile(page: Page, tile: Locator, title: string): Promise<boo
+     return true;
+   } catch {
+     await page.keyboard.press("Escape").catch(() => {});
++    await clearBackdrops(page);
+     return false;
+   }
+ }
+@@ -685,6 +701,7 @@ async function downloadTile(page: Page, target: Locator | TileResolver, targetSt
+     } catch (err) {
+       lastError = err;
+       await page.keyboard.press("Escape").catch(() => {});
++      await clearBackdrops(page);
+       await pause(page, 2000);
+     }
+   }
+@@ -772,10 +789,38 @@ export async function runGeneration(job: Job): Promise<string[]> {
+   const s = job.params;
+ 
+   await ensureProjectGrid(page);
++  // Flow dropped or renamed the "Agent" button (seen 2026-10-23): an unguarded lookup here failed every job after a
++  // 30 s wait. A missing button cannot be pressed, so carry on, but only once agent mode is shown to be off, since it
++  // shows no credit quote. The prompt box's button names go in the job note so the new label can be found.
+   const agent = page.getByRole("button", { name: "Agent", exact: true });
+-  if ((await agent.getAttribute("aria-pressed")) === "true") await agent.click();
++  const pressed = await agent.getAttribute("aria-pressed", { timeout: 5000 }).catch(() => undefined);
++  if (pressed === "true") await agent.click();
++  if (pressed === undefined) {
++    const box = page.locator("flow-base-prompt-box");
++    const names = await box
++      .getByRole("button")
++      .evaluateAll((els) => els.map((e) => (e.getAttribute("aria-label") || (e as HTMLElement).innerText || "").replace(/\s+/g, " ").trim()))
++      .catch(() => [] as string[]);
++    const seen = `prompt-box buttons: ${names.filter(Boolean).join(" | ") || "(none found)"}`;
++    const agentOn =
++      (await page.getByRole("textbox", { name: /Agent instructions/ }).isVisible().catch(() => false)) ||
++      (await page.getByPlaceholder(/Agent instructions/).isVisible().catch(() => false)) ||
++      (await box.getByRole("button", { name: "Settings", exact: true }).isVisible().catch(() => false));
++    if (agentOn) throw new Error(`Flow's Agent button was not found and agent mode looks on, so nothing was generated (${seen}).`);
++    job.note = [job.note, `Agent button not found; agent mode looked off, continued (${seen}).`].filter(Boolean).join(" · ");
++  }
+   const clear = page.getByRole("button", { name: "Clear prompt" });
+   if (await clear.isVisible().catch(() => false)) await clear.click();
++  // "Clear prompt" clears the text but not attached references, and a job that fails after attaching leaves its chips
++  // behind (2026-10-23: 3-5 stale chips kept Start generation disabled for every later job). Stop before adding more.
++  // Scoped to the prompt box: a page-wide "Ingredient" lookup also counts a hidden button outside the composer. Exact,
++  // because a substring match also counts "Add ingredients to the prompt box" and stopped a clean box.
++  const leftover = await page.locator("flow-base-prompt-box").getByRole("button", { name: "Ingredient", exact: true }).count().catch(() => 0);
++  if (leftover > 0) {
++    throw new Error(
++      `Flow's prompt box already holds ${leftover} reference image(s) left from an earlier job, so nothing was generated. Remove them in Flow, then submit again.`,
++    );
++  }
+ 
+   job.credits = await applySettings(page, job);
+   if (job.credits > s.max_credits) {

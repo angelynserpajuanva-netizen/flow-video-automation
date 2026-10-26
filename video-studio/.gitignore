@@ -1,0 +1,8 @@
+.env
+node_modules/
+inbox/*
+music/*
+build/*
+output/*
+!*/.gitkeep
+.DS_Store

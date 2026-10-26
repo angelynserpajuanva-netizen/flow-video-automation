@@ -1,0 +1,21 @@
+{
+  "name": "video-studio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Tella recordings + HyperFrames graphics + Epidemic Sound music, assembled with FFmpeg",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "doctor": "bash scripts/doctor.sh",
+    "tella:list": "node scripts/tella.mjs list",
+    "tella:pull": "node scripts/tella.mjs pull",
+    "preview": "cd brand && npx hyperframes preview",
+    "render:intro": "cd brand && npx hyperframes render -c intro.html -o ../build/intro.mp4",
+    "render:outro": "cd brand && npx hyperframes render -c outro.html -o ../build/outro.mp4",
+    "render": "npm run render:intro && npm run render:outro",
+    "assemble": "bash scripts/assemble.sh",
+    "test:pipeline": "bash scripts/test-pipeline.sh"
+  }
+}
